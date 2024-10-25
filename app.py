@@ -1,35 +1,34 @@
 # app.py
 import streamlit as st
 import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
+import pickle
 
-# Load data
-data = pd.read_csv("LoanApprovalPrediction.csv")
-data.drop(['Loan_ID'], axis=1, inplace=True)
+# Load the saved model
+with open("loan_model.pkl", "rb") as f:
+    model_lr = pickle.load(f)
 
-# Preprocess data
-X = data.drop(['Loan_Status'], axis=1)
-Y = data['Loan_Status']
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=1)
-
-# Train the model
-model_lr = LogisticRegression()
-model_lr.fit(X_train, Y_train)
-
-# Streamlit app
+# Define input fields directly in the app
 st.title("Loan Approval Prediction")
 
 # Sidebar for user input
 st.sidebar.header("Input Loan Applicant Details")
 def user_input_features():
-    inputs = {}
-    for col in X.columns:
-        # Assuming numerical input for simplicity; can be extended for categorical data
-        inputs[col] = st.sidebar.number_input(f"{col}", float(X[col].min()), float(X[col].max()))
+    inputs = {
+        "Gender": st.sidebar.selectbox("Gender", [0, 1]),  # 0 or 1, assuming binary
+        "Married": st.sidebar.selectbox("Married", [0, 1]),  # 0 or 1
+        "Dependents": st.sidebar.number_input("Dependents", min_value=0, max_value=3, step=1),  # Example range
+        "Education": st.sidebar.selectbox("Education", [0, 1]),  # 0 or 1
+        "Self_Employed": st.sidebar.selectbox("Self Employed", [0, 1]),  # 0 or 1
+        "ApplicantIncome": st.sidebar.number_input("Applicant Income", min_value=0),
+        "CoapplicantIncome": st.sidebar.number_input("Coapplicant Income", min_value=0),
+        "LoanAmount": st.sidebar.number_input("Loan Amount", min_value=0),
+        "Loan_Amount_Term": st.sidebar.number_input("Loan Amount Term", min_value=0),
+        "Credit_History": st.sidebar.selectbox("Credit History", [0, 1]),  # 0 or 1
+        "Property_Area": st.sidebar.selectbox("Property Area", [0, 1, 2])  # Assume 3 categories
+    }
     return pd.DataFrame(inputs, index=[0])
 
+# Capture user input data
 user_inputs = user_input_features()
 
 # Display input data
